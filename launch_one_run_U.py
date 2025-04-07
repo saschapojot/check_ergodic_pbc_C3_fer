@@ -21,7 +21,8 @@ confErrCode=4
 #parse conf, get jsonDataFromConf
 confResult=subprocess.run(["python3", "./init_run_scripts/parseConf.py", confFileName], capture_output=True, text=True)
 confJsonStr2stdout=confResult.stdout
-# print(confJsonStr2stdout)
+# print(confJsonStr2stdout)\
+
 if confResult.returncode !=0:
     print("Error running parseConf.py with code "+str(confResult.returncode))
     # print(confResult.stderr)

@@ -13,7 +13,7 @@ def format_using_decimal(value, precision=15):
     formatted_value = decimal_value.quantize(Decimal(1)) if decimal_value == decimal_value.to_integral() else decimal_value.normalize()
     return str(formatted_value)
 
-if (len(sys.argv)!=4):
+if (len(sys.argv)!=5):
     print("wrong number of arguments")
     exit()
 
@@ -24,10 +24,10 @@ TStr=format_using_decimal(T)
 print("TStr="+TStr)
 
 startingFileIndSuggest=int(sys.argv[3])
-
+init_path=sys.argv[4]
 #############################################
 #launch mc, i.e., giving initial conditions
-launchResult=subprocess.run(["python3", "launch_one_run.py", f"./dataAll/N{N}/T{TStr}/run_T{TStr}.mc.conf"])
+launchResult=subprocess.run(["python3", "launch_one_run_U.py", f"./dataAll/N{N}/T{TStr}/init_path{init_path}/run_T{TStr}_init_path{init_path}.mc.conf"])
 print(launchResult.stdout)
 if launchResult.returncode!=0:
     print("error in launch one run: "+str(launchResult.returncode))
@@ -41,7 +41,7 @@ if launchResult.returncode!=0:
 # Function to handle the termination of the subprocess on SIGINT
 cppExecutable="./run_mc"
 cpp_process = subprocess.Popen(
-    [cppExecutable, f"./dataAll/N{N}/T{TStr}/cppIn.txt"],
+    [cppExecutable, f"./dataAll/N{N}/T{TStr}/init_path{init_path}/cppIn.txt"],
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
     text=True
@@ -94,4 +94,4 @@ if stderr:
     print(stderr.strip())
 
 #############################################
-print("T="+TStr)
+# print("T="+TStr)
