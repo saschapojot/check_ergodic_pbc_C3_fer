@@ -12,7 +12,7 @@ import pickle
 
 
 #this script loads previous data
-np.random.seed(29)
+# np.random.seed(29)
 numArgErr=4
 valErr=5
 
