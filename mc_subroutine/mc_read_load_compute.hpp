@@ -12,6 +12,7 @@
 #include <fstream>
 #include <Python.h>
 #include <random>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -491,7 +492,15 @@ public:
     int mod_direction0(const int&m0);
     int mod_direction1(const int&m1);
     void init_mats();
+    void init_mats_C3();
+
+    void compute_rotated_sets();
+    void iter_U6(const int&n0, const int &n1, int &n0Next, int &n1Next);
+    void iter_U3(const int&n0, const int &n1, int &n0Next, int &n1Next);
+    void compute_seed_vecs();
+
     void init_Px_Py_Qx_Qy();
+
     ///
     /// @param n0
     /// @param n1
@@ -594,4 +603,12 @@ public:
 
     double dipole_lower_bound;
     double dipole_upper_bound;
+
+    //seed vecs
+    std::vector<std::vector<int>>S_O1;
+    std::vector<std::vector<int>>S_D1;
+
+    //rotated set
+    std::set<std::vector<int>> R_O1;
+    std::set<std::vector<int>> R_D1;
 };

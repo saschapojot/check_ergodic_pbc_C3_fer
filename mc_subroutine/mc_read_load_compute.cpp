@@ -200,6 +200,407 @@ return ((m0 % N0) + N0) % N0;
 int mc_computation::mod_direction1(const int&m1)
 {return ((m1 % N1) + N1) % N1;
 }
+void mc_computation::init_mats_C3()
+{
+    ////////////////////////////////////////////////////////////////////////
+    //init A_T
+    this->A=arma::sp_dmat (N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+        for (const auto& vec: this->R_O1)
+        {
+            int n_row=vec[0];
+            int n_col=vec[1];
+            int m0=n0+n_row;
+            int m1=n1+n_col;
+            int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+            int m0_mod=mod_direction0(m0);
+            int m1_mod=mod_direction1(m1);
+            double tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0);
+            int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+            if (flat_ind_row==flat_ind_col)
+            {
+                continue;
+            }else
+            {
+                A(flat_ind_row,flat_ind_col)=1.0 / tmp;
+            }//end if else
+
+        }//end for vec
+        }//end for n1
+    }//end for n0
+    // A.print("A:");
+    this->A_T=A.t();
+    // arma::dmat A_dense(A_T);
+    // double* raw_ptr = A_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outA="./A.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outA);
+    //
+    //
+    // std::cout<<"A saved"<<std::endl;
+    //end A_T init
+    ////////////////////////////////////////////////////////////////////////
+    ///
+    ///////////////////////////////////////////////////////////////////////////
+    //init B_T
+    this-> B=arma::sp_dmat (N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto& vec: this->R_O1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                if (flat_ind_row==flat_ind_col)
+                {
+                    continue;
+                }else
+                {
+                    double up = std::pow(m0 - n0 - 0.5 * m1 + 0.5 * n1, 2.0);
+                    double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0);
+                    double down = std::pow(down_tmp, 2.0);
+                    B(flat_ind_row,flat_ind_col)=up / down;
+                }//end if else
+            }//end for vec
+
+        }//end for n1
+    }//end for n0
+
+    // B.print("B:");
+    this->B_T=B.t();
+    //save and check
+    // arma::dmat B_dense(B_T);
+    // double* raw_ptr = B_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outB="./B.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outB);
+    // std::cout<<"B saved"<<std::endl;
+    //end init B_T
+    ///////////////////////////////////////////////////////////////////////////
+    ///
+    //////////////////////////////////////////////////////////////////////////////
+    /// init C_T
+    this->C=arma::sp_dmat (N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto& vec: this->R_O1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                if (flat_ind_row==flat_ind_col)
+                {
+                    continue;
+                }else
+                {
+                    double up = (m0 - n0 - 0.5 * m1 + 0.5 * n1) * (m1 - n1);
+                    double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0);
+                    double down = std::pow(down_tmp, 2.0);
+
+                    C(flat_ind_row,flat_ind_col)=up / down;
+                }//end if else
+            }//end for vec
+
+        }//end for n1
+    }//end for n0
+    // C.print("C:");
+    this->C_T=C.t();
+    //save and check
+    // arma::dmat C_dense(C_T);
+    // double* raw_ptr = C_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outC="./C.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outC);
+    // std::cout<<"C saved"<<std::endl;
+    //end init C_T
+    //////////////////////////////////////////////////////////////////////////////
+    /// init G_T
+    this-> G=arma::sp_dmat (N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto& vec: this->R_O1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+
+                if (flat_ind_row==flat_ind_col)
+                {
+                    continue;
+                }else
+                {
+                    double up = std::pow(m1 - n1, 2.0);
+                    double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0);
+                    double down = std::pow(down_tmp, 2.0);
+                    G(flat_ind_row,flat_ind_col)=up / down;
+                }//end if else
+
+            }//end for vec
+        }//end for n1
+
+    }//end for n0
+    this->G_T=G.t();
+
+    // G.print("G:");
+    // arma::dmat G_dense(G_T);
+    // double* raw_ptr = G_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outG="./G.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outG);
+    // std::cout<<"G saved"<<std::endl;
+    /// end init G_T
+    /// /////////////////////////////////////////////////////////////////////////////////
+    ///
+    this->R = arma::sp_dmat(N0 * N1, N0 * N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto & vec:this->R_D1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                double down = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0) + m1 - n1 +
+                                               1.0 / 3.0;
+                R(flat_ind_row,flat_ind_col)=1.0 / down;
+            }//end for vec
+        }//end for n1
+    }//end for n0
+    this->R_T=R.t();
+    //save and check
+    // arma::dmat R_dense(R_T);
+    // double* raw_ptr = R_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outR="./R.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outR);
+    // std::cout<<"R saved"<<std::endl;
+    ///end init R
+    /////////////////////////////////////////////////////////////////////////////////
+    ///init Gamma
+    this->Gamma=arma::sp_dmat(N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto & vec:this->R_D1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                double up = std::pow(m0 - n0 - 0.5 * m1 + 0.5 * n1, 2.0);
+                double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0) + m1 - n1
+                    + 1.0 / 3.0;
+                double down = std::pow(down_tmp, 2.0);
+                this->Gamma(flat_ind_row, flat_ind_col) = up / down;
+            }//end for vec
+        }//end for n1
+    }//end for n0
+    this->Gamma_T=Gamma.t();
+    // Gamma_T.print("Gamma_T:");
+    // arma::dmat Gamma_dense(Gamma);
+    // double* raw_ptr = Gamma_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outGamma="./Gamma.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outGamma);
+    // std::cout<<"Gamma saved"<<std::endl;
+    ///end init Gamma
+    ///////////////////////////////////////////////////////////////////////////////////
+    ///init Theta
+    this->Theta=arma::sp_dmat(N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto & vec:this->R_D1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                double up = (m0 - n0 - 0.5 * m1 + 0.5 * n1) * (std::sqrt(3.0) / 2.0 * m1 - std::sqrt(3.0) / 2.0 * n1
+                       + std::sqrt(3.0) / 2.0);
+
+                double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0) + m1 - n1
+                    + 1.0 / 3.0;
+
+                double down = std::pow(down_tmp, 2.0);
+                this->Theta(flat_ind_row, flat_ind_col) = up / down;
+            }//end for vec
+        }//end for n1
+    }//end for n0
+    this->Theta_T=Theta.t();
+    // arma::dmat Theta_dense(Theta);
+    // double* raw_ptr = Theta_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outTheta="./Theta.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outTheta);
+    // std::cout<<"Theta saved"<<std::endl;
+    ///end init Theta
+    ///////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
+    /// init Lambda
+    this->Lambda=arma::sp_dmat(N0*N1,N0*N1);
+    for (int n0=0;n0<N0;n0++)
+    {
+        for (int n1=0;n1<N1;n1++)
+        {
+            for (const auto & vec:this->R_D1)
+            {
+                int n_row=vec[0];
+                int n_col=vec[1];
+                int m0=n0+n_row;
+                int m1=n1+n_col;
+                int flat_ind_row=double_ind_to_flat_ind(n0,n1);
+                int m0_mod=mod_direction0(m0);
+                int m1_mod=mod_direction1(m1);
+                int flat_ind_col=double_ind_to_flat_ind(m0_mod,m1_mod);
+                double up = std::pow(std::sqrt(3.0) / 2.0 * m1 - std::sqrt(3.0) / 2.0 * n1 + std::sqrt(3.0) / 3.0,
+                                       2.0);
+
+                double down_tmp = std::pow(m0 - n0, 2.0) - (m0 - n0) * (m1 - n1) + std::pow(m1 - n1, 2.0) + m1 - n1
+                    + 1.0 / 3.0;
+                double down = std::pow(down_tmp, 2.0);
+
+                this->Lambda(flat_ind_row, flat_ind_col) = up / down;
+            }//end for vec
+        }//end for n1
+    }//end for n0
+    this->Lambda_T=Lambda.t();
+    // arma::dmat Lambda_dense(Lambda);
+    // double* raw_ptr = Lambda_dense.memptr();
+    // std::shared_ptr<double[]> sptr(raw_ptr, [](double* p) {
+    // /* do nothing */
+    // });
+    // std::string outLambda="./Lambda.pkl";
+    // this->save_array_to_pickle(sptr,N0*N1*N0*N1,outLambda);
+    // std::cout<<"Lambda saved"<<std::endl;
+
+    /// end init Lambda
+    ///////////////////////////////////////////////////////////////////////////////////
+}
+
+
+void mc_computation::compute_seed_vecs()
+{
+for (int n0=-Nx;n0<=Nx;n0++)
+{
+    for (int n1=-Ny;n1<=Ny;n1++)
+    {
+        this->S_O1.push_back({n0,n1});
+        this->S_D1.push_back({n0,n1});
+    }//end for n1
+}//end for n0
+}
+void mc_computation::iter_U6(const int&n0, const int &n1, int &n0Next, int &n1Next)
+{
+    n0Next=n0-n1;
+    n1Next=n0;
+}
+
+void mc_computation::iter_U3(const int&n0, const int &n1, int &n0Next, int &n1Next)
+{
+    n0Next=-n1-1;
+    n1Next=n0-n1-1;
+}
+void mc_computation::compute_rotated_sets()
+{
+    //R_O1
+    for (const auto & vec: this->S_O1)
+    {
+        int n0Curr=vec[0];
+        int n1Curr=vec[1];
+        int n0Next,n1Next;
+        for (int j=0;j<6;j++)
+        {
+            this->iter_U6(n0Curr,n1Curr,n0Next,n1Next);
+            n0Curr=n0Next;
+            n1Curr=n1Next;
+            R_O1.insert({n0Curr,n1Curr});
+        }//end for j
+
+    }//end for
+// for (const auto & vec:R_O1)
+// {
+//     std::cout<<vec[0]<<", "<<vec[1]<<std::endl;
+// }//print
+//     std::cout<<"size ="<<R_O1.size()<<std::endl;
+
+    //R_D1
+    for (const auto & vec: this->S_D1)
+    {
+        int n0Curr=vec[0];
+        int n1Curr=vec[1];
+        int n0Next,n1Next;
+        for (int j=0;j<3;j++)
+        {
+        this->iter_U3(n0Curr,n1Curr,n0Next,n1Next);
+            n0Curr=n0Next;
+            n1Curr=n1Next;
+            this->R_D1.insert({n0Curr,n1Curr});
+        }//end for j
+    }//end for
+// for (const auto & vec: R_D1)
+// {
+//     std::cout<<vec[0]<<", "<<vec[1]<<std::endl;
+// }
+//     std::cout<<"size="<<R_D1.size()<<std::endl;
+
+}
+
 
 void mc_computation::init_mats()
 {
@@ -1184,10 +1585,13 @@ void mc_computation::execute_mc(const std::shared_ptr<double[]>& Px_vec,
 
 void mc_computation::init_and_run()
 {
-    this->init_mats();
+    this->compute_seed_vecs();
+    this->compute_rotated_sets();
 
+    // this->init_mats();
+    this->init_mats_C3();
     this->init_Px_Py_Qx_Qy();
-     this->execute_mc(Px_init,Py_init,Qx_init,Qy_init,newFlushNum);
+    this->execute_mc(Px_init,Py_init,Qx_init,Qy_init,newFlushNum);
 
     // int flattened_ind=47;
     // arma::dvec Px_arma_vec_curr = arma::randu<arma::dvec>(N0*N1);
@@ -1199,9 +1603,7 @@ void mc_computation::init_and_run()
     // this->HQy_update_colForm(flattened_ind,Px_arma_vec_curr,Px_arma_vec_next,
     //     Py_arma_vec_curr,Qx_arma_vec_curr,
     //     Qy_arma_vec_curr,UCurr,UNext);
-
 }
-
 
 
 ///
