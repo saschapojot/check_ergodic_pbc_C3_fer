@@ -29,7 +29,7 @@ else:
 Nx-=2
 Ny-=2
 
-TVals=[5.7]
+TVals=[5.8]
 default_flush_num=60
 #lattice const
 a=2
@@ -82,8 +82,7 @@ alpha4_Str=format_using_decimal(alpha4)
 alpha5_Str=format_using_decimal(alpha5)
 alpha6_Str=format_using_decimal(alpha6)
 alpha7_Str=format_using_decimal(alpha7)
-
-init_path_tot=30
+init_path_tot=100
 
 J_Str=format_using_decimal(J)
 h=0.05

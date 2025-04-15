@@ -23,9 +23,9 @@ if os.path.isdir(outPath):
 Path(outPath).mkdir(exist_ok=True,parents=True)
 
 N=10 #unit cell number
-init_path_tot=30
+init_path_tot=100
 
-TVals=[5.7]
+TVals=[5.8]
 
 def contents_to_bash(T_ind,j):
     TStr=TVals[T_ind]

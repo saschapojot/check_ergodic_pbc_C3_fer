@@ -8,7 +8,7 @@ import os
 #this script generates slurm .sh files for each init_path
 
 
-init_path_tot=30
+init_path_tot=100
 N=10
 startingFileIndSuggest=3
 def format_using_decimal(value, precision=15):
@@ -25,7 +25,7 @@ outPath="./bashFiles_init_paths/"
 if os.path.isdir(outPath):
     shutil.rmtree(outPath)
 Path(outPath).mkdir(exist_ok=True,parents=True)
-TVals=[5.7]
+TVals=[5.8]
 
 
 def init_for_one_T(T_ind,j):
